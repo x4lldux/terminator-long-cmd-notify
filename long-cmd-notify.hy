@@ -17,15 +17,15 @@ Code is written in Hy and generated to Python3.
 (import [terminatorlib.plugin :as plugin]
         ;; [terminatorlib.util [err dbg]]
         [terminatorlib.terminator [Terminator]])
-(import gi)
 
+(import gi)
 (gi.require_version "Notify" "0.7")
 (import [gi.repository [GObject GLib Notify]])
 
 
 
-(setv VERSION "0.1.0")
-(setv AVAILABLE ["LongCommandNotify"])
+(setv VERSION "0.1.0"
+      AVAILABLE ["LongCommandNotify"])
 
 
 (defclass LongCommandNotify [plugin.Plugin]
@@ -44,16 +44,19 @@ Code is written in Hy and generated to Python3.
                   (.add new-watched term)
                   (if-not (in term self.watched)
                           (let [vte (.get_vte term)]
-                               (.connect term "focus-out" self.update-watched-delayed None)
-                               (.connect vte "focus-out-event" self.update-watched-delayed None)
-                               (.connect vte "notification-received" self.notification-received term))))
+                               (.connect term "focus-out"
+                                         self.update-watched-delayed None)
+                               (.connect vte "focus-out-event"
+                                         self.update-watched-delayed None)
+                               (.connect vte "notification-received"
+                                         self.notification-received term))))
              (setv self.watched new-watched)))
 
   (defn update-watched-delayed [self &rest _]
         (GObject.idle_add (fn [self] (.update-watched self) False) self)
         True)
 
-  (defn notification-received [self vte summary body terminator_term]
+  (defn notification-received [self vte summary body _terminator_term]
         (if (not (.has_focus vte))
             (-> (.new Notify.Notification summary body "terminator")
                 (.show)))
